@@ -2,6 +2,7 @@ using laba1.Database;
 using Microsoft.EntityFrameworkCore;
 using NLog;
 using NLog.Web;
+using laba1.ServiceExtensions;
 
 var builder = WebApplication.CreateBuilder(args);
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
@@ -20,7 +21,11 @@ try
     builder.Services.AddDbContext<MatlashDbContext>(options => 
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+    builder.Services.AddServices();
+
     var app = builder.Build();
+
+    //initData().Wait();
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
