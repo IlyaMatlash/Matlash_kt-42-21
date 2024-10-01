@@ -8,16 +8,16 @@ namespace laba1.Database
 
         public class MatlashDbContext : DbContext
         {
-            DbSet<EducationalSubject> EducationalSubjects { get; set; }
-            DbSet<Professor> Professors { get; set; }
-            DbSet<Workload> Workloads { get; set; }
+            public DbSet<EducationalSubject> EducationalSubjects { get; set; }
+            public DbSet<Professor> Professors { get; set; }
+            public DbSet<Workload> Workloads { get; set; }
             protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
                 modelBuilder.ApplyConfiguration(new EducationSubjectConfiguration());
                 modelBuilder.ApplyConfiguration(new ProfessorConfiguration());
                 modelBuilder.ApplyConfiguration(new WorkloadConfiguration());
             }
-            public MatlashDbContext(DbContextOptions<MatlashDbContext> options) : base(options)
+            public MatlashDbContext(DbContextOptions options) : base(options)
             {
             }
         }
