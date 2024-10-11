@@ -4,6 +4,7 @@ using laba1.Filters;
 using Microsoft.AspNetCore.Mvc;
 using laba1.Database;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 namespace laba1.Controllers
 {
     [ApiController]
@@ -19,14 +20,94 @@ namespace laba1.Controllers
             _logger = logger;
             _workloadService = workloadService;
         }
-        [HttpPost(Name = "Filter")]
-        public async Task<IActionResult> GetWorkloadAsync(WorkloadFilter filter, CancellationToken cancellationToken = default)
+        [HttpPost("GetWorkloadByProfessor")]
+        //public async Task<IActionResult> GetWorkloadAsync(WorkloadFilterProfessor filter, CancellationToken cancellationToken = default)
+        //{
+        //    var resp = await _workloadService.GetWorkloadAsync(filter, cancellationToken);
+        //    return Ok(resp);
+        //}
+        //public IActionResult GetWorkloadAsync(string name, [FromBody] Workload getWorkload)
+        public async Task<IActionResult> GetWorkloadAsync(string firstName, string lastName, string middleName)
         {
-            var resp = await _workloadService.GetWorkloadAsync(filter, cancellationToken);
-            return Ok(resp);
+            var professor = await _dbContext.Set<Professor>()
+        .FirstOrDefaultAsync(p =>
+            p.FirstName.Contains(firstName) ||
+            p.LastName.Contains(lastName) ||
+            p.MiddleName.Contains(middleName));
+
+            if (professor == null)
+            {
+                return NotFound("Профессор с таким именем не найден.");
+            }
+
+            // Получаем нагрузки для найденного профессора
+            var workloads = await _dbContext.Workloads
+                .Where(w => w.ProfessorId == professor.Id)
+                .Select(w => new
+                {
+                    DisciplineName = w.EducationalSubject.Name,
+                    NumberOfHours = w.NumberOfHours
+                })
+                .ToListAsync();
+
+            return Ok(new { Professor = professor, Workloads = workloads });
         }
 
-        
+        [HttpPost("GetWorkloadByEducationSubject")]
+        public async Task<IActionResult> GetWorcloadByEducationSubject(string educationSubject)
+        {
+            var edSub = await _dbContext.Set<EducationalSubject>()
+                .FirstOrDefaultAsync(e =>
+                e.Name.Contains(educationSubject));
+
+            if (edSub == null)
+            {
+                return NotFound("Нагрузки с такой дисциплиной нет.");
+            }
+
+            var workloads = await _dbContext.Workloads
+            .Include(w => w.Professor) // Загружаем информацию о профессоре
+            .Include(w => w.EducationalSubject) // Загружаем информацию о дисциплине
+            .Where(w => w.EducationalSubject.Name.Contains(educationSubject))
+            .Select(w => new
+            {
+                ProfessorName = $"{w.Professor.FirstName} {w.Professor.LastName}",
+                DisciplineName = w.EducationalSubject.Name,
+                NumberOfHours = w.NumberOfHours
+            })
+            .ToListAsync();
+
+            return Ok(new { EducationSubject = edSub, Workloads = workloads });
+        }
+
+        [HttpPost("GetWorkloadByEducationSubjectForId")]
+        public async Task<IActionResult> GetWorcloadByEducationSubjectForId(int educationSubjectId)
+        {
+            var edSub = await _dbContext.Set<EducationalSubject>()
+         .FirstOrDefaultAsync(e => e.Id == educationSubjectId);
+
+
+            if (edSub == null)
+            {
+                return NotFound("Нагрузки с такой дисциплиной нет.");
+            }
+
+            var workloads = await _dbContext.Workloads
+            .Include(w => w.Professor) // Загружаем информацию о профессоре
+            .Include(w => w.EducationalSubject) // Загружаем информацию о дисциплине
+            .Where(w => w.EducationalSubject.Id == educationSubjectId)
+            .Select(w => new
+            {
+                ProfessorName = $"{w.Professor.FirstName} {w.Professor.LastName}",
+                DisciplineName = w.EducationalSubject.Name,
+                NumberOfHours = w.NumberOfHours
+            })
+            .ToListAsync();
+
+            return Ok(new { EducationSubject = edSub, Workloads = workloads });
+        }
+
+
         [HttpPost("AddProfessor")]
         public IActionResult CreateProfessor([FromBody] ProfessorFilter filter)
         {
@@ -35,7 +116,6 @@ namespace laba1.Controllers
                 return BadRequest(ModelState);
             }
             var professor = new Professor();
-            professor.Id = filter.Id;
             professor.FirstName = filter.LastName;
             professor.LastName = filter.FirstName;
             professor.MiddleName = filter.MiddleName;
@@ -52,7 +132,6 @@ namespace laba1.Controllers
                 return BadRequest(ModelState);
             }
             var educationsubject = new EducationalSubject();
-            educationsubject.Id = filter.Id;
             educationsubject.Name = filter.Name;
             _dbContext.EducationalSubjects.Add(educationsubject);
             _dbContext.SaveChanges();
@@ -67,7 +146,6 @@ namespace laba1.Controllers
                 return BadRequest(ModelState);
             }
             var workload = new Workload();
-            workload.Id = filter.Id;
             workload.ProfessorId = filter.professor_id;
             workload.EducationalSubjectId = filter.EducationalSubjectId;
             workload.NumberOfHours = filter.numberofhours;
@@ -124,7 +202,6 @@ namespace laba1.Controllers
             {
                 return NotFound("Профессор не найден.");
             }
-            existingProfessor.Id = updateProfessor.Id;
             existingProfessor.FirstName = updateProfessor.FirstName;
             existingProfessor.LastName = updateProfessor.LastName;
             existingProfessor.MiddleName = updateProfessor.MiddleName;
@@ -140,7 +217,6 @@ namespace laba1.Controllers
             {
                 return NotFound("Дисциплина не найдена.");
             }
-            existingEducationSubject.Id = updateEducationSubject.Id;
             existingEducationSubject.Name = updateEducationSubject.Name;
             _dbContext.SaveChanges();
             return Ok();
@@ -154,9 +230,8 @@ namespace laba1.Controllers
             {
                 return NotFound("Нагрузка не найдена.");
             }
-            existingWorkload.Id = updateWorkload.Id;
             existingWorkload.ProfessorId = updateWorkload.professor_id;
-            existingWorkload.EducationalSubjectId = updateWorkload.Id;
+            existingWorkload.EducationalSubjectId = updateWorkload.EducationalSubjectId;
             existingWorkload.NumberOfHours = updateWorkload.numberofhours;
             _dbContext.SaveChanges();
             return Ok();
