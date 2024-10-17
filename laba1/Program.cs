@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using NLog;
 using NLog.Web;
 using laba1.ServiceExtensions;
-//using laba1.Middlewares;
+using laba1.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
@@ -35,7 +35,7 @@ try
         app.UseSwaggerUI();
     }
 
-    //app.UseMiddleware<laba1.Middlewares.ExceptionHandlerMiddleware>();
+    app.UseMiddleware<laba1.Middlewares.ExceptionHandlerMiddleware>();
 
     app.UseAuthorization();
 
