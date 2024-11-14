@@ -3,7 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34902.65
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "laba1", "laba1\laba1.csproj", "{19E82C17-EA43-4160-B828-FF4FE639D9F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "laba1", "laba1\laba1.csproj", "{19E82C17-EA43-4160-B828-FF4FE639D9F2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IlyaMatlashKt-42-21.Tests", "IlyaMatlashKt-42-21.Tests\IlyaMatlashKt-42-21.Tests.csproj", "{BFD44921-9444-4723-BA54-988C24CE7D04}"
+	ProjectSection(ProjectDependencies) = postProject
+		{19E82C17-EA43-4160-B828-FF4FE639D9F2} = {19E82C17-EA43-4160-B828-FF4FE639D9F2}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +20,10 @@ Global
 		{19E82C17-EA43-4160-B828-FF4FE639D9F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19E82C17-EA43-4160-B828-FF4FE639D9F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{19E82C17-EA43-4160-B828-FF4FE639D9F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFD44921-9444-4723-BA54-988C24CE7D04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFD44921-9444-4723-BA54-988C24CE7D04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFD44921-9444-4723-BA54-988C24CE7D04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFD44921-9444-4723-BA54-988C24CE7D04}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
