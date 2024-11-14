@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using laba1.Database;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 namespace laba1.Controllers
 {
     [ApiController]
@@ -54,7 +55,7 @@ namespace laba1.Controllers
         }
 
         [HttpPost("GetWorkloadByEducationSubject")]
-        public async Task<IActionResult> GetWorcloadByEducationSubject(string educationSubject)
+        public async Task<IActionResult> GetWorkloadByEducationSubject(string educationSubject)
         {
             var edSub = await _dbContext.Set<EducationalSubject>()
                 .FirstOrDefaultAsync(e =>
@@ -80,8 +81,35 @@ namespace laba1.Controllers
             return Ok(new { EducationSubject = edSub, Workloads = workloads });
         }
 
+        [HttpPost("GetWorkloadByEducationSubjectForId")]
+        public async Task<IActionResult> GetWorkloadByEducationSubjectForId(int educationSubjectId)
+        {
+            var edSub = await _dbContext.Set<EducationalSubject>()
+         .FirstOrDefaultAsync(e => e.Id == educationSubjectId);
+
+
+            if (edSub == null)
+            {
+                return NotFound("Нагрузки с такой дисциплиной нет.");
+            }
+
+            var workloads = await _dbContext.Workloads
+            .Include(w => w.Professor) // Загружаем информацию о профессоре
+            .Include(w => w.EducationalSubject) // Загружаем информацию о дисциплине
+            .Where(w => w.EducationalSubject.Id == educationSubjectId)
+            .Select(w => new
+            {
+                ProfessorName = $"{w.Professor.FirstName} {w.Professor.LastName}",
+                DisciplineName = w.EducationalSubject.Name,
+                NumberOfHours = w.NumberOfHours
+            })
+            .ToListAsync();
+
+            return Ok(new { EducationSubject = edSub, Workloads = workloads });
+        }
+
         [HttpPost("GetWorkloadByEducationSubjectForNumOfHours")]
-        public async Task<IActionResult> GetWorkloadByEducationSubjectForNumOfHours(int minHours, int maxHours)
+        public async Task<IActionResult> GetWorkloadByEducationSubjectForNumOfHourse(int minHours, int maxHours)
         {
             if (minHours < 0 || maxHours < 0 || minHours > maxHours)
             {
@@ -106,33 +134,6 @@ namespace laba1.Controllers
             }
 
             return Ok(workloads);
-        }
-
-        [HttpPost("GetWorkloadByEducationSubjectForId")]
-        public async Task<IActionResult> GetWorcloadByEducationSubjectForId(int educationSubjectId)
-        {
-            var edSub = await _dbContext.Set<EducationalSubject>()
-         .FirstOrDefaultAsync(e => e.Id == educationSubjectId);
-
-
-            if (edSub == null)
-            {
-                return NotFound("Нагрузки с такой дисциплиной нет.");
-            }
-
-            var workloads = await _dbContext.Workloads
-            .Include(w => w.Professor) // Загружаем информацию о профессоре
-            .Include(w => w.EducationalSubject) // Загружаем информацию о дисциплине
-            .Where(w => w.EducationalSubject.Id == educationSubjectId)
-            .Select(w => new
-            {
-                ProfessorName = $"{w.Professor.FirstName} {w.Professor.LastName}",
-                DisciplineName = w.EducationalSubject.Name,
-                NumberOfHours = w.NumberOfHours
-            })
-            .ToListAsync();
-
-            return Ok(new { EducationSubject = edSub, Workloads = workloads });
         }
 
 
