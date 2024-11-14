@@ -80,34 +80,6 @@ namespace laba1.Controllers
             return Ok(new { EducationSubject = edSub, Workloads = workloads });
         }
 
-        [HttpPost("GetWorkloadByEducationSubjectForNumOfHours")]
-        public async Task<IActionResult> GetWorkloadByEducationSubjectForNumOfHours(int minHours, int maxHours)
-        {
-            if (minHours < 0 || maxHours < 0 || minHours > maxHours)
-            {
-                return BadRequest("Некорректные диапазоны часов.");
-            }
-
-            var workloads = await _dbContext.Workloads
-            .Include(w => w.Professor) // Загружаем информацию о профессоре
-            .Include(w => w.EducationalSubject) // Загружаем информацию о дисциплине
-            .Where(w => w.NumberOfHours >= minHours && w.NumberOfHours <= maxHours)
-            .Select(w => new
-            {
-                ProfessorName = $"{w.Professor.FirstName} {w.Professor.LastName}",
-                DisciplineName = w.EducationalSubject.Name,
-                NumberOfHours = w.NumberOfHours
-            })
-            .ToListAsync();
-
-            if (!workloads.Any())
-            {
-                return NotFound("Нагрузки по заданным часам не найдены.");
-            }
-
-            return Ok(workloads);
-        }
-
         [HttpPost("GetWorkloadByEducationSubjectForId")]
         public async Task<IActionResult> GetWorcloadByEducationSubjectForId(int educationSubjectId)
         {
